@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   Header,
@@ -21,6 +22,10 @@ interface VideoParams {
 }
 interface AudioParams {
   audioName: string;
+}
+
+interface BodyDTO {
+  username: 'string';
 }
 
 @Controller('/users')
@@ -93,6 +98,15 @@ export class UsersController {
       success: true,
       statusCode: 200,
       data: { headers },
+    };
+  }
+  @Post('/body')
+  // Body for url encoded and Json type data
+  getBodyData(@Body() requestData: BodyDTO) {
+    return {
+      success: true,
+      statusCode: 200,
+      data: { name: requestData?.username },
     };
   }
 }
