@@ -1,16 +1,32 @@
 import {
+  Body,
   Controller,
   Get,
   Header,
+  Headers,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
+  Query,
   Redirect,
   Req,
   Res,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { of } from 'rxjs';
+
+interface VideoParams {
+  id: number;
+  name: string;
+}
+interface AudioParams {
+  audioName: string;
+}
+
+interface BodyDTO {
+  username: 'string';
+}
 
 @Controller('/users')
 export class UsersController {
@@ -61,4 +77,40 @@ export class UsersController {
   getUserAccount() {
     return { success: true, statusCode: 200, data: { account: 'premium' } };
   }
+  // Params
+  @Get('/videos/:id/:name')
+  // to get the id value from the URL add "id in @Param() decorator" lik @Param('id'
+  getVideos(@Param() params: VideoParams) {
+    return { success: true, statusCode: 200, data: { videoId: params.id } };
+  }
+  @Get('/audios')
+  // Query Params
+  getAudios(@Query() query: AudioParams) {
+    return {
+      success: true,
+      statusCode: 200,
+      data: { audioName: query.audioName },
+    };
+  }
+  //Headers
+  getAudioHeaders(@Headers() headers: Record<string, any>) {
+    return {
+      success: true,
+      statusCode: 200,
+      data: { headers },
+    };
+  }
+  @Post('/body')
+  // Body for url encoded and Json type data
+  getBodyData(@Body() requestData: BodyDTO) {
+    return {
+      success: true,
+      statusCode: 200,
+      data: { name: requestData?.username },
+    };
+  }
 }
+
+// Notes:
+// Header are used to set and send the headers in the response
+// Headers are used to extract the headers from the request
