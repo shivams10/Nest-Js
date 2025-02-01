@@ -1,79 +1,193 @@
-# Nest-Js
+# NestJS Dependency Injection Notes
 
-## Introduction
-> Nestjs is a framework for building efficient, scalable, and maintainable Node.js server-side applications.
-> Nestjs provide application architecture, configurations, and the layer of abstraction above common Node.js web frameworks with freedom of customization to create applications.
+## Table of Contents
+- [NestJS Dependency Injection Notes](#nestjs-dependency-injection-notes)
+  - [Table of Contents](#table-of-contents)
+  - [What is Dependency Injection?](#what-is-dependency-injection)
+  - [Key Concepts in NestJS DI](#key-concepts-in-nestjs-di)
+    - [1. Providers](#1-providers)
+    - [2. Injectable Decorator (`@Injectable()`)](#2-injectable-decorator-injectable)
+    - [3. Injection Tokens](#3-injection-tokens)
+    - [4. Scopes in Providers](#4-scopes-in-providers)
+    - [5. Custom Providers](#5-custom-providers)
+    - [6. Modules and DI](#6-modules-and-di)
+    - [7. Optional Dependencies](#7-optional-dependencies)
+  - [Common Patterns](#common-patterns)
+    - [1. Service Injection into Controllers](#1-service-injection-into-controllers)
+    - [2. Circular Dependency](#2-circular-dependency)
+    - [3. Global Providers](#3-global-providers)
+  - [Tips](#tips)
 
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+---
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## What is Dependency Injection?
+Dependency Injection (DI) is a design pattern where an object receives its dependencies from an external source rather than creating them itself. In **NestJS**, DI is built into its core and is facilitated by its modular architecture.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Key Concepts in NestJS DI
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### 1. Providers
+Providers are the core concept of DI in NestJS. A provider can be a service, repository, factory, or any custom class. They are injected into other classes (e.g., controllers, services) where needed.
 
-## Installation
+- **Defining a Provider:**
+  ```typescript
+  @Injectable()
+  export class MyService {
+    getHello(): string {
+      return 'Hello World!';
+    }
+  }
+  ```
 
-```bash
-$ yarn install
+- Providers must be registered in the module where they will be used:
+  ```typescript
+  @Module({
+    providers: [MyService],
+  })
+  export class AppModule {}
+  ```
+
+### 2. Injectable Decorator (`@Injectable()`)
+- The `@Injectable()` decorator marks a class as a provider, making it available for DI.
+- Without this decorator, the NestJS DI system cannot inject the class.
+
+### 3. Injection Tokens
+- Providers are typically identified by their class types. For custom tokens, use the `@Inject()` decorator.
+- Example with a custom token:
+  ```typescript
+  const MY_TOKEN = 'MY_TOKEN';
+
+  @Injectable()
+  export class MyService {
+    constructor(@Inject(MY_TOKEN) private readonly value: string) {}
+  }
+
+  @Module({
+    providers: [
+      {
+        provide: MY_TOKEN,
+        useValue: 'Injected Value',
+      },
+    ],
+  })
+  export class AppModule {}
+  ```
+
+### 4. Scopes in Providers
+Providers can have different lifetimes:
+- **Default (Singleton):** A single instance shared across the application.
+- **Request Scope:** A new instance is created for each incoming request.
+- **Transient Scope:** A new instance is created every time it's injected.
+
+Example of a request-scoped provider:
+```typescript
+@Injectable({ scope: Scope.REQUEST })
+export class RequestScopedService {}
 ```
 
-## Running the app
+### 5. Custom Providers
+NestJS supports creating providers with:
+- **`useValue`:** Provide a static value.
+- **`useClass`:** Use a different implementation class.
+- **`useFactory`:** Provide a factory function.
+- **`useExisting`:** Alias another provider.
 
-```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+Example of `useFactory`:
+```typescript
+@Module({
+  providers: [
+    {
+      provide: 'CUSTOM_PROVIDER',
+      useFactory: () => {
+        return new SomeService();
+      },
+    },
+  ],
+})
+export class AppModule {}
 ```
 
-## Test
+### 6. Modules and DI
+- Modules are the basic building blocks of NestJS applications.
+- Providers are registered in modules and can be shared across other modules by exporting them.
 
-```bash
-# unit tests
-$ yarn run test
+Example:
+```typescript
+@Module({
+  providers: [MyService],
+  exports: [MyService],
+})
+export class SharedModule {}
 
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+@Module({
+  imports: [SharedModule],
+})
+export class AppModule {}
 ```
 
-## Support
+### 7. Optional Dependencies
+Use the `@Optional()` decorator to inject a dependency that may not always be provided:
+```typescript
+@Injectable()
+export class MyService {
+  constructor(@Optional() private readonly optionalDependency?: OptionalService) {}
+}
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+## Common Patterns
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### 1. Service Injection into Controllers
+```typescript
+@Controller()
+export class AppController {
+  constructor(private readonly myService: MyService) {}
 
-## License
+  @Get()
+  getHello(): string {
+    return this.myService.getHello();
+  }
+}
+```
 
-Nest is [MIT licensed](LICENSE).
+### 2. Circular Dependency
+- NestJS provides the `forwardRef()` utility to resolve circular dependencies.
+  ```typescript
+  @Injectable()
+  export class ServiceA {
+    constructor(@Inject(forwardRef(() => ServiceB)) private serviceB: ServiceB) {}
+  }
+
+  @Injectable()
+  export class ServiceB {
+    constructor(private serviceA: ServiceA) {}
+  }
+
+  @Module({
+    providers: [
+      ServiceA,
+      ServiceB,
+    ],
+  })
+  export class AppModule {}
+  ```
+
+### 3. Global Providers
+- Use the `@Global()` decorator on a module to make its providers globally available.
+  ```typescript
+  @Global()
+  @Module({
+    providers: [MyService],
+    exports: [MyService],
+  })
+  export class GlobalModule {}
+  ```
+
+---
+
+## Tips
+- Always structure your application with modularity in mind to make DI easier to manage.
+- Use `@Inject()` with custom tokens for non-class-based providers.
+- Debug DI errors by checking if the provider is registered and exported in the correct module.
