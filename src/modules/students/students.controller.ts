@@ -12,4 +12,14 @@ export class StudentsController {
     //   constructor(@Optional() private store: StudentsStore) {
     console.log('🚀 ~ StudentsController ~ constructor ~ store:', store);
   }
+
+  //  **  ValueProviders **
+  //   constructor(@Inject('DATABASE_NAME') private dbName: string) {
+  //     console.log('🚀 ~ StudentsController ~ constructor ~ dbName:', this.dbName);
+  //   }
+
+  // ** Factory Providers **
+  //   constructor(@Inject('EVENT_STORE') private eventStore: any) {
+  //     console.log('🚀 ~ StudentsController ~ constructor ~ eventStore:', this.eventStore)
+  //   };
 }
