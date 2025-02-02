@@ -209,7 +209,6 @@ NestJS supports several types of dependency injection:
   })
   export class AppModule {}
 
-  ![alt text](image.png)
   ```
 
 ### 2. Factory Providers
