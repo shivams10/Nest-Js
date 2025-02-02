@@ -12,6 +12,18 @@
     - [5. Custom Providers](#5-custom-providers)
     - [6. Modules and DI](#6-modules-and-di)
     - [7. Optional Dependencies](#7-optional-dependencies)
+  - [Injection Types](#injection-types)
+    - [1. Constructor-Based Injection](#1-constructor-based-injection)
+    - [2. Property-Based Injection](#2-property-based-injection)
+    - [3. Method-Based Injection](#3-method-based-injection)
+  - [Provider Types](#provider-types)
+    - [1. Standard Providers](#1-standard-providers)
+    - [2. Factory Providers](#2-factory-providers)
+    - [3. Value Providers](#3-value-providers)
+  - [Injection Scopes](#injection-scopes)
+    - [1. Singleton Scope](#1-singleton-scope)
+    - [2. Request Scope](#2-request-scope)
+    - [3. Transient Scope](#3-transient-scope)
   - [Common Patterns](#common-patterns)
     - [1. Service Injection into Controllers](#1-service-injection-into-controllers)
     - [2. Circular Dependency](#2-circular-dependency)
@@ -134,6 +146,127 @@ export class MyService {
   constructor(@Optional() private readonly optionalDependency?: OptionalService) {}
 }
 ```
+
+---
+
+## Injection Types
+
+NestJS supports several types of dependency injection:
+
+### 1. Constructor-Based Injection
+- Dependencies are injected through the constructor of a class.
+- Most common and preferred method.
+- Example:
+  ```typescript
+  @Injectable()
+  export class MyService {
+    constructor(private readonly dependency: DependencyService) {}
+  }
+  ```
+
+### 2. Property-Based Injection
+- Dependencies are injected into class properties.
+- Requires the `@Inject()` decorator.
+- Example:
+  ```typescript
+  @Injectable()
+  export class MyService {
+    @Inject(DependencyService)
+    private readonly dependency: DependencyService;
+  }
+  ```
+
+### 3. Method-Based Injection
+- Dependencies are passed as parameters to methods.
+- Typically used with lifecycle hooks (e.g., `OnModuleInit`).
+- Example:
+  ```typescript
+  @Injectable()
+  export class MyService implements OnModuleInit {
+    private dependency: DependencyService;
+
+    constructor(@Inject(DependencyService) private dep: DependencyService) {}
+
+    onModuleInit() {
+      this.dependency = this.dep;
+    }
+  }
+  ```
+
+---
+
+## Provider Types
+
+### 1. Standard Providers
+- These are simple classes annotated with `@Injectable()` and registered in the module.
+- Example:
+  ```typescript
+  @Injectable()
+  export class MyService {}
+
+  @Module({
+    providers: [MyService],
+  })
+  export class AppModule {}
+
+  ![alt text](image.png)
+  ```
+
+### 2. Factory Providers
+- Use a factory function to create the provider.
+- Example:
+  ```typescript
+  @Module({
+    providers: [
+      {
+        provide: 'FACTORY_PROVIDER',
+        useFactory: () => {
+          return new MyService();
+        },
+      },
+    ],
+  })
+  export class AppModule {}
+  ```
+
+### 3. Value Providers
+- Provide a static value.
+- Example:
+  ```typescript
+  @Module({
+    providers: [
+      {
+        provide: 'VALUE_PROVIDER',
+        useValue: 'Some Static Value',
+      },
+    ],
+  })
+  export class AppModule {}
+  ```
+
+---
+
+## Injection Scopes
+
+### 1. Singleton Scope
+- Default scope in NestJS.
+- A single instance of the provider is shared across the entire application.
+
+### 2. Request Scope
+- A new instance of the provider is created for each incoming request.
+- Example:
+  ```typescript
+  @Injectable({ scope: Scope.REQUEST })
+  export class RequestScopedService {}
+  ```
+
+### 3. Transient Scope
+- A new instance of the provider is created every time it is injected.
+- Example:
+  ```typescript
+  @Injectable({ scope: Scope.TRANSIENT })
+  export class TransientService {}
+  ```
 
 ---
 
