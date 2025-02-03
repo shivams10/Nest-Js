@@ -1,5 +1,5 @@
 // Example for Standard Provider
-import { Injectable } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 
 interface Student {
   id: number;
@@ -7,9 +7,13 @@ interface Student {
   age: number;
 }
 
-@Injectable()
+@Injectable({ scope: Scope.DEFAULT }) // Default Scope, Request Scope, Transient Scope
 export class StudentsStore {
   private store = new Map<number, Student>();
+
+  constructor() {
+    console.log('🚀 ~ Students Store Init ');
+  }
 
   addUser(student: Student) {
     this.store.set(student.id, student);
