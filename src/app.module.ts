@@ -4,6 +4,7 @@ import { UserResourceController } from './modules/userResource/userResource.cont
 import { StudentsStore } from './stores/student.store';
 import { StudentsController } from './modules/students/students.controller';
 import { BehaviorSubject, ReplaySubject } from 'rxjs';
+import { AlbumService } from './services/albums.service';
 
 const IS_DEV_MODE = true;
 @Module({
@@ -32,6 +33,7 @@ const IS_DEV_MODE = true;
       provide: 'LIMIT',
       useValue: 2,
     },
+    AlbumService,
   ],
   // shorthand for the above line when the injectable token and the class have the same name
   // providers: [StudentsStore],
